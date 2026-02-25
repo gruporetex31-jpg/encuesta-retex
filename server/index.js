@@ -18,7 +18,7 @@ app.post("/enviar", async (req, res) => {
     service: "gmail",
     auth: {
       user: "gruporetex31@gmail.com",
-      pass: "anbmqymomvgwfboe" // Contraseña de aplicación (válida)
+      pass: process.env.EMAIL_PASS // Contraseña de aplicación (válida)
     }
   });
 
