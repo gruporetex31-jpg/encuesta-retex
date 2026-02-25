@@ -15,12 +15,14 @@ app.post("/enviar", async (req, res) => {
   const firmaBuffer = Buffer.from(firmaBase64, "base64");
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "gruporetex31@gmail.com",
-      pass: process.env.EMAIL_PASS // Contraseña de aplicación (válida)
-    }
-  });
+  service: "gmail",
+  auth: {
+    user: "gruporetex31@gmail.com",
+    pass: process.env.EMAIL_PASS
+  },
+  logger: true,   // ← Agrega esta línea
+  debug: true     // ← Agrega esta línea
+});
 
   const mailOptions = {
     from: "gruporetex31@gmail.com",
@@ -67,6 +69,7 @@ app.post("/enviar", async (req, res) => {
       {
         filename: "firma.png",
         content: firmaBuffer,
+        console.log(`📏 Tamaño de firma: ${firmaBuffer.length} bytes`);
         cid: "firma_cliente" // Mismo identificador que en el src del img
       }
     ]
