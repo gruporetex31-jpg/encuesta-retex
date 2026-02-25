@@ -81,7 +81,8 @@ app.post("/enviar", async (req, res) => {
     res.status(500).json({ error: "Error de envío" });
   }
 });
+const PORT = process.env.PORT || 3001;
 
-app.listen(3001, () => {
-  console.log("🚀 Servidor RETEX activo en puerto 3001");
+app.listen(PORT, () => {
+  console.log("🚀 Servidor RETEX activo en puerto " + PORT);
 });
