@@ -14,15 +14,18 @@ app.post("/enviar", async (req, res) => {
   const firmaBase64 = d.firma.replace(/^data:image\/png;base64,/, "");
   const firmaBuffer = Buffer.from(firmaBase64, "base64");
 
+  // Mostrar tamaño de la firma en los logs
+  console.log(`📏 Tamaño de firma: ${firmaBuffer.length} bytes`);
+
   const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "gruporetex31@gmail.com",
-    pass: process.env.EMAIL_PASS
-  },
-  logger: true,   // ← Agrega esta línea
-  debug: true     // ← Agrega esta línea
-});
+    service: "gmail",
+    auth: {
+      user: "gruporetex31@gmail.com",
+      pass: process.env.EMAIL_PASS
+    },
+    logger: true,   // Habilitar logging de nodemailer
+    debug: true     // Habilitar modo debug (muestra la conversación SMTP)
+  });
 
   const mailOptions = {
     from: "gruporetex31@gmail.com",
@@ -69,7 +72,6 @@ app.post("/enviar", async (req, res) => {
       {
         filename: "firma.png",
         content: firmaBuffer,
-        console.log(`📏 Tamaño de firma: ${firmaBuffer.length} bytes`);
         cid: "firma_cliente" // Mismo identificador que en el src del img
       }
     ]
@@ -84,8 +86,8 @@ app.post("/enviar", async (req, res) => {
     res.status(500).json({ error: "Error de envío" });
   }
 });
-const PORT = process.env.PORT || 3001;
 
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log("🚀 Servidor RETEX activo en puerto " + PORT);
 });
