@@ -26,7 +26,7 @@ function App() {
     const firmaData = sigRef.current.getCanvas().toDataURL("image/png");
 
     try {
-      await axios.post("https://retex-backend123.onrender.com/enviar", { ...form, firma: firmaData });
+      fetch("https://encuesta-retex-backend.onrender.com/enviar", {...form, firma: firmaData });
       alert("✅ Encuesta enviada correctamente a Retex.");
       window.location.reload();
     } catch (error) {
