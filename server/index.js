@@ -18,14 +18,20 @@ app.post("/enviar", async (req, res) => {
   console.log(`📏 Tamaño de firma: ${firmaBuffer.length} bytes`);
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "gruporetex31@gmail.com",
-      pass: process.env.EMAIL_PASS
-    },
-    logger: true,   // Habilitar logging de nodemailer
-    debug: true     // Habilitar modo debug (muestra la conversación SMTP)
-  });
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true para 465, false para 587
+  auth: {
+    user: "gruporetex31@gmail.com",
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false // evita problemas de certificado en algunos entornos
+  },
+  connectionTimeout: 10000, // 10 segundos
+  greetingTimeout: 10000,
+  socketTimeout: 15000
+});
 
   const mailOptions = {
     from: "gruporetex31@gmail.com",
