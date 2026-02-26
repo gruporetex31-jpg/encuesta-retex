@@ -24,6 +24,12 @@ function App() {
 
     const firmaData = sigRef.current.getCanvas().toDataURL("image/png");
 
+    // Mostrar indicador de carga (opcional)
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    btn.innerText = "ENVIANDO...";
+    btn.disabled = true;
+
     try {
       const response = await fetch("https://encuesta-retex-backend.onrender.com/enviar", {
         method: "POST",
@@ -31,16 +37,20 @@ function App() {
         body: JSON.stringify({ ...form, firma: firmaData })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
+        throw new Error(data.error || `Error del servidor: ${response.status}`);
       }
 
-      const resultado = await response.json();
       alert("✅ Encuesta enviada correctamente a Retex.");
       window.location.reload();
     } catch (error) {
       console.error("Error en el envío:", error);
-      alert("❌ Error al enviar. Verifique que el backend esté funcionando y revise la consola para más detalles.");
+      alert("❌ Error al enviar: " + error.message);
+    } finally {
+      btn.innerText = originalText;
+      btn.disabled = false;
     }
   };
 
