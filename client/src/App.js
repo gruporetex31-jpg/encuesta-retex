@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import axios from "axios";
 import SignatureCanvas from "react-signature-canvas";
 import "./App.css";
 
@@ -26,11 +25,22 @@ function App() {
     const firmaData = sigRef.current.getCanvas().toDataURL("image/png");
 
     try {
-      fetch("https://encuesta-retex-backend.onrender.com/enviar", {...form, firma: firmaData });
+      const response = await fetch("https://encuesta-retex-backend.onrender.com/enviar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, firma: firmaData })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status}`);
+      }
+
+      const resultado = await response.json();
       alert("✅ Encuesta enviada correctamente a Retex.");
       window.location.reload();
     } catch (error) {
-      alert("❌ Error: Verifique que el servidor (puerto 3001) esté encendido.");
+      console.error("Error en el envío:", error);
+      alert("❌ Error al enviar. Verifique que el backend esté funcionando y revise la consola para más detalles.");
     }
   };
 
