@@ -32,6 +32,13 @@ body {
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* 👇 NUEVA CLASE PARA EL LOGO */
+.logo-retex {
+  width: 200px;
+  display: block;
+  margin: 20px auto;
+}
+
 form {
   padding: 35px 30px;
 }

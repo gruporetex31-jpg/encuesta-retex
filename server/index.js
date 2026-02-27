@@ -15,12 +15,12 @@ app.post("/enviar", async (req, res) => {
   try {
     const d = req.body;
 
-    // Validar datos obligatorios (opcional pero recomendado)
+    // Validar datos obligatorios
     if (!d.factura || !d.correo || !d.cliente || !d.evaluador || !d.firma) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
-    // Procesar firma: quitar cabecera data:image/png;base64,
+    // Procesar firma
     const firmaBase64 = d.firma.replace(/^data:image\/png;base64,/, "");
     const firmaBuffer = Buffer.from(firmaBase64, "base64");
 
@@ -28,11 +28,17 @@ app.post("/enviar", async (req, res) => {
 
     // Construir el mensaje
     const msg = {
-      to: "gruporetex31@gmail.com",        // Destinatario (puede ser el mismo)
-      from: "gruporetex31@gmail.com",      // Remitente verificado en SendGrid
+      to: "gruporetex31@gmail.com",
+      from: "gruporetex31@gmail.com", // Debe estar verificado en SendGrid
       subject: `Nueva Encuesta Retex - Factura: ${d.factura} - ${d.cliente}`,
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; border-left: 5px solid #e31e24; padding: 25px; max-width: 600px; background: #ffffff; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin:0 auto;">
+          
+          <!-- LOGO RETEX (NUEVO) -->
+          <div style="text-align:center; margin-bottom:20px;">
+            <img src="cid:logo_retex" width="200" style="max-width:100%; height:auto;" alt="RETEX Logo" />
+          </div>
+
           <h2 style="color: #e31e24; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 12px;">📋 REPORTE DE SATISFACCIÓN RETEX</h2>
           
           <table style="width:100%; border-collapse: collapse;">
@@ -70,6 +76,11 @@ app.post("/enviar", async (req, res) => {
       `,
       attachments: [
         {
+          filename: 'logo1.jpg',
+          path: './images/logo1.jpg', // Ruta relativa a la carpeta server
+          cid: 'logo_retex'
+        },
+        {
           content: firmaBuffer.toString("base64"),
           filename: "firma.png",
           type: "image/png",
@@ -81,17 +92,16 @@ app.post("/enviar", async (req, res) => {
 
     // Enviar correo
     await sgMail.send(msg);
-    console.log("✅ Correo enviado con firma visible");
+    console.log("✅ Correo enviado con logo y firma visibles");
     res.json({ mensaje: "Enviado correctamente" });
 
   } catch (error) {
     console.error("❌ Error al enviar con SendGrid:", error);
-    // Responder con error para que el frontend lo capture
     res.status(500).json({ error: "Error interno al enviar el correo. Revisa los logs." });
   }
 });
 
-// Ruta de prueba para verificar que el servidor está vivo
+// Ruta de prueba
 app.get("/", (req, res) => {
   res.send("Servidor RETEX con SendGrid funcionando 🚀");
 });

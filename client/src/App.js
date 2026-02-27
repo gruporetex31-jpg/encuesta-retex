@@ -24,7 +24,7 @@ function App() {
 
     const firmaData = sigRef.current.getCanvas().toDataURL("image/png");
 
-    // Mostrar indicador de carga (opcional)
+    // Mostrar indicador de carga
     const btn = e.target.querySelector('button[type="submit"]');
     const originalText = btn.innerText;
     btn.innerText = "ENVIANDO...";
@@ -57,6 +57,12 @@ function App() {
   return (
     <div className="container">
       <div className="header-retex">
+        {/* 👇 LOGO AÑADIDO AQUÍ */}
+        <img 
+          src="/images/logo1.jpg" 
+          alt="Logo Retex"
+          className="logo-retex"
+        />
         <h2>Encuesta de Satisfacción</h2>
       </div>
 
