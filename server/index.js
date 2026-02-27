@@ -19,8 +19,8 @@ app.post("/enviar", async (req, res) => {
   try {
     const d = req.body;
 
-    // Validar campos obligatorios
-    if (!d.factura || !d.correo || !d.cliente || !d.evaluador || !d.firma) {
+    // Validar campos obligatorios (ahora producto en lugar de factura)
+    if (!d.producto || !d.correo || !d.cliente || !d.evaluador || !d.firma) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
@@ -28,7 +28,7 @@ app.post("/enviar", async (req, res) => {
     const firmaBase64 = d.firma.replace(/^data:image\/png;base64,/, "");
     const firmaBuffer = Buffer.from(firmaBase64, "base64");
 
-    // 🔧 Ruta corregida del logo (images/logo1.jpg)
+    // Ruta del logo
     const logoPath = path.join(__dirname, "images", "logo1.jpg");
     let logoBuffer = null;
     try {
@@ -53,13 +53,13 @@ app.post("/enviar", async (req, res) => {
       attachments.push({
         content: logoBuffer.toString("base64"),
         filename: "logo1.jpg",
-        type: "image/jpeg", // Importante: cambiar a image/jpeg
+        type: "image/jpeg",
         disposition: "inline",
         content_id: "logo_retex"
       });
     }
 
-    // HTML mejorado (con el mismo diseño que ya tienes, pero usando el cid correcto)
+    // HTML del correo (se actualizó la línea de Factura por Producto)
     const htmlContent = `
       <div style="margin:0;padding:0;background-color:#f2f5f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -67,7 +67,7 @@ app.post("/enviar", async (req, res) => {
             <td align="center">
               <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.05); margin:30px 0;">
                 
-                <!-- Logo (ahora con cid:logo_retex) -->
+                <!-- Logo -->
                 <tr>
                   <td align="center" style="padding:30px 20px 10px 20px;">
                     <img src="cid:logo_retex" alt="RETEX" width="180" style="display:block; max-width:180px; height:auto;">
@@ -81,11 +81,11 @@ app.post("/enviar", async (req, res) => {
                   </td>
                 </tr>
 
-                <!-- Datos de la encuesta -->
+                <!-- Datos de la encuesta (Producto reemplaza a Factura) -->
                 <tr>
                   <td style="padding:30px 30px 15px 30px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Factura:</span> <span style="color:#34495e;">${d.factura}</span></td></tr>
+                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Producto / Servicio:</span> <span style="color:#34495e;">${d.producto}</span></td></tr>
                       <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Correo:</span> <span style="color:#34495e;">${d.correo}</span></td></tr>
                       <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Cliente:</span> <span style="color:#34495e;">${d.cliente}</span></td></tr>
                       <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Evaluador:</span> <span style="color:#34495e;">${d.evaluador}</span></td></tr>
@@ -103,7 +103,7 @@ app.post("/enviar", async (req, res) => {
                       <tr><td style="border-bottom:1px solid #dce4ec;"><b>Relación cotización-entrega:</b> ⭐ ${d.relacion}</td></tr>
                       <tr><td style="border-bottom:1px solid #dce4ec;"><b>Cumplimiento de fecha:</b> ${d.fecha}</td></tr>
                       <tr><td style="border-bottom:1px solid #dce4ec;"><b>Calidad de productos:</b> ⭐ ${d.calidad}</td></tr>
-                      <tr><td style="border-bottom:1px solid #dce4ec;"><b>¿Recomienda RETEX?:</b> ${d.recomienda}</td></tr>
+                      <tr><td style="border-bottom:1px solid #dce4ec;"><b>¿Recomendaría a RETEX?:</b> ${d.recomienda}</td></tr>
                       <tr><td><b>Destaca:</b> ${d.destaca}</td></tr>
                     </table>
                   </td>
@@ -132,19 +132,20 @@ app.post("/enviar", async (req, res) => {
       </div>
     `;
 
+    // Asunto actualizado con el producto
     const msg = {
       to: "gruporetex31@gmail.com",
       from: {
         email: "gruporetex31@gmail.com",
         name: "RETEX Encuestas"
       },
-      subject: `Nueva Encuesta Retex - Factura ${d.factura}`,
+      subject: `Nueva Encuesta Retex - Producto: ${d.producto}`,
       html: htmlContent,
       attachments: attachments
     };
 
     await sgMail.send(msg);
-    console.log("✅ Correo enviado con logo y firma incrustados, ruta del logo:", logoPath);
+    console.log("✅ Correo enviado con logo y firma incrustados, producto:", d.producto);
     res.json({ mensaje: "Enviado correctamente" });
 
   } catch (error) {

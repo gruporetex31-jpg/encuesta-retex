@@ -5,7 +5,8 @@ import "./App.css";
 function App() {
   const sigRef = useRef(null);
   const [form, setForm] = useState({
-    factura: "", correo: "", cliente: "", evaluador: "",
+    producto: "",          // antes era factura
+    correo: "", cliente: "", evaluador: "",
     ventas: "", soluciones: "", relacion: "",
     fecha: "", calidad: "", recomienda: "", destaca: ""
   });
@@ -57,7 +58,6 @@ function App() {
   return (
     <div className="container">
       <div className="header-retex">
-        {/* 👇 LOGO AÑADIDO AQUÍ */}
         <img 
           src="/images/logo1.jpg" 
           alt="Logo Retex"
@@ -67,7 +67,20 @@ function App() {
       </div>
 
       <form onSubmit={enviarEncuesta}>
-        <input type="text" name="factura" placeholder="Número de Factura *" required onChange={handleChange} />
+        {/* Campo select para producto */}
+        <select name="producto" required onChange={handleChange} defaultValue="">
+          <option value="" disabled>Seleccione un producto/servicio *</option>
+          <option value="Bobina">Bobina</option>
+          <option value="Ensamble">Ensamble</option>
+          <option value="Bandas de línea">Bandas de línea</option>
+          <option value="Termopar">Termopar</option>
+          <option value="Bandas especiales">Bandas especiales</option>
+          <option value="Tubulares">Tubulares</option>
+          <option value="Cartuchos">Cartuchos</option>
+          <option value="Servicio">Servicio</option>
+          <option value="Componentes generales">Componentes generales</option>
+        </select>
+
         <input type="email" name="correo" placeholder="Correo Electrónico *" required onChange={handleChange} />
         <input type="text" name="cliente" placeholder="Nombre del Cliente o Empresa *" required onChange={handleChange} />
         <input type="text" name="evaluador" placeholder="Nombre y Cargo del Evaluador *" required onChange={handleChange} />
@@ -108,7 +121,7 @@ function App() {
         </div>
 
         <div className="pregunta-seccion">
-          <h4>¿Recomienda Retex?</h4>
+          <h4>¿Recomendaría a RETEX?</h4> {/* Texto corregido */}
           {["Sí", "No"].map(op => (
             <label key={op} className="radio-label"><input type="radio" name="recomienda" value={op} required onChange={handleChange} /> {op}</label>
           ))}
