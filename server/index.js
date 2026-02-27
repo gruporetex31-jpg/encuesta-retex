@@ -1,9 +1,6 @@
 const express = require("express");
 const sgMail = require("@sendgrid/mail");
 const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
-
 const app = express();
 
 // Middlewares
@@ -14,17 +11,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Configurar API Key de SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Leer el logo y convertirlo a base64 (se ejecuta una vez al iniciar)
-let logoBase64 = null;
-try {
-  const logoPath = path.join(__dirname, "images", "logo1.jpg");
-  const logoBuffer = fs.readFileSync(logoPath);
-  logoBase64 = logoBuffer.toString("base64");
-  console.log("✅ Logo cargado correctamente");
-} catch (error) {
-  console.error("❌ Error al cargar el logo:", error);
-}
-
 app.post("/enviar", async (req, res) => {
   try {
     const d = req.body;
@@ -34,13 +20,15 @@ app.post("/enviar", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
-    // Procesar firma
+    // Procesar firma (base64 → buffer)
     const firmaBase64 = d.firma.replace(/^data:image\/png;base64,/, "");
     const firmaBuffer = Buffer.from(firmaBase64, "base64");
-
     console.log(`📏 Tamaño de firma: ${firmaBuffer.length} bytes`);
 
-    // Construir el mensaje
+    // URL del logo en el frontend (Render)
+    const logoUrl = "https://encuesta-retex-frontend.onrender.com/images/logo1.jpg";
+
+    // Construir mensaje
     const msg = {
       to: "gruporetex31@gmail.com",
       from: "gruporetex31@gmail.com",
@@ -48,9 +36,9 @@ app.post("/enviar", async (req, res) => {
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; border-left: 5px solid #e31e24; padding: 25px; max-width: 600px; background: #ffffff; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin:0 auto;">
           
-          <!-- LOGO RETEX -->
+          <!-- LOGO RETEX (desde URL pública) -->
           <div style="text-align:center; margin-bottom:20px;">
-            <img src="cid:logo_retex" width="200" style="max-width:100%; height:auto;" alt="RETEX Logo" />
+            <img src="${logoUrl}" width="200" style="max-width:100%; height:auto;" alt="RETEX Logo" />
           </div>
 
           <h2 style="color: #e31e24; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 12px;">📋 REPORTE DE SATISFACCIÓN RETEX</h2>
@@ -88,34 +76,20 @@ app.post("/enviar", async (req, res) => {
           </div>
         </div>
       `,
-      attachments: []
+      attachments: [
+        {
+          content: firmaBuffer.toString("base64"),
+          filename: "firma.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "firma_cliente"
+        }
+      ]
     };
-
-    // Agregar attachment del logo si se cargó correctamente
-    if (logoBase64) {
-      msg.attachments.push({
-        content: logoBase64,
-        filename: "logo1.jpg",
-        type: "image/jpeg",
-        disposition: "inline",
-        content_id: "logo_retex"
-      });
-    } else {
-      console.warn("⚠️ Logo no disponible, se envía sin logo");
-    }
-
-    // Agregar attachment de la firma
-    msg.attachments.push({
-      content: firmaBuffer.toString("base64"),
-      filename: "firma.png",
-      type: "image/png",
-      disposition: "inline",
-      content_id: "firma_cliente"
-    });
 
     // Enviar correo
     await sgMail.send(msg);
-    console.log("✅ Correo enviado con logo y firma visibles");
+    console.log("✅ Correo enviado con logo (URL) y firma visible");
     res.json({ mensaje: "Enviado correctamente" });
 
   } catch (error) {
