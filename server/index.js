@@ -28,17 +28,17 @@ app.post("/enviar", async (req, res) => {
     const firmaBase64 = d.firma.replace(/^data:image\/png;base64,/, "");
     const firmaBuffer = Buffer.from(firmaBase64, "base64");
 
-    // Cargar logo desde el sistema de archivos
+    // 🔧 Ruta corregida del logo (images/logo1.jpg)
+    const logoPath = path.join(__dirname, "images", "logo1.jpg");
     let logoBuffer = null;
-    const logoPath = path.join(__dirname, "logo.png"); // Cambia la extensión si tu logo es .jpg
     try {
       logoBuffer = fs.readFileSync(logoPath);
-      console.log("✅ Logo cargado correctamente desde archivo local");
+      console.log("✅ Logo cargado correctamente desde:", logoPath);
     } catch (err) {
-      console.warn("⚠️ No se encontró el archivo 'logo.png' en el servidor. El logo no se mostrará.");
+      console.warn("⚠️ No se encontró el archivo del logo en la ruta esperada:", logoPath);
     }
 
-    // Preparar adjuntos: siempre incluir la firma, y el logo si existe
+    // Preparar adjuntos
     const attachments = [
       {
         content: firmaBuffer.toString("base64"),
@@ -52,14 +52,14 @@ app.post("/enviar", async (req, res) => {
     if (logoBuffer) {
       attachments.push({
         content: logoBuffer.toString("base64"),
-        filename: "logo.png",
-        type: "image/png",
+        filename: "logo1.jpg",
+        type: "image/jpeg", // Importante: cambiar a image/jpeg
         disposition: "inline",
         content_id: "logo_retex"
       });
     }
 
-    // Construir HTML con diseño mejorado
+    // HTML mejorado (con el mismo diseño que ya tienes, pero usando el cid correcto)
     const htmlContent = `
       <div style="margin:0;padding:0;background-color:#f2f5f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -67,7 +67,7 @@ app.post("/enviar", async (req, res) => {
             <td align="center">
               <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.05); margin:30px 0;">
                 
-                <!-- Logo -->
+                <!-- Logo (ahora con cid:logo_retex) -->
                 <tr>
                   <td align="center" style="padding:30px 20px 10px 20px;">
                     <img src="cid:logo_retex" alt="RETEX" width="180" style="display:block; max-width:180px; height:auto;">
@@ -85,26 +85,10 @@ app.post("/enviar", async (req, res) => {
                 <tr>
                   <td style="padding:30px 30px 15px 30px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="padding:8px 0; border-bottom:1px solid #eaeef2;">
-                          <span style="font-weight:600; color:#2c3e50;">Factura:</span> <span style="color:#34495e;">${d.factura}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0; border-bottom:1px solid #eaeef2;">
-                          <span style="font-weight:600; color:#2c3e50;">Correo:</span> <span style="color:#34495e;">${d.correo}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0; border-bottom:1px solid #eaeef2;">
-                          <span style="font-weight:600; color:#2c3e50;">Cliente:</span> <span style="color:#34495e;">${d.cliente}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0; border-bottom:1px solid #eaeef2;">
-                          <span style="font-weight:600; color:#2c3e50;">Evaluador:</span> <span style="color:#34495e;">${d.evaluador}</span>
-                        </td>
-                      </tr>
+                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Factura:</span> <span style="color:#34495e;">${d.factura}</span></td></tr>
+                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Correo:</span> <span style="color:#34495e;">${d.correo}</span></td></tr>
+                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Cliente:</span> <span style="color:#34495e;">${d.cliente}</span></td></tr>
+                      <tr><td style="padding:8px 0; border-bottom:1px solid #eaeef2;"><span style="font-weight:600; color:#2c3e50;">Evaluador:</span> <span style="color:#34495e;">${d.evaluador}</span></td></tr>
                     </table>
                   </td>
                 </tr>
@@ -160,7 +144,7 @@ app.post("/enviar", async (req, res) => {
     };
 
     await sgMail.send(msg);
-    console.log("✅ Correo enviado con logo y firma incrustados");
+    console.log("✅ Correo enviado con logo y firma incrustados, ruta del logo:", logoPath);
     res.json({ mensaje: "Enviado correctamente" });
 
   } catch (error) {
